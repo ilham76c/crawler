@@ -1,14 +1,13 @@
 <?php
-$domain_extension = array("");
-$url = explode(".", parse_url("http://www.kemenparekraf.go.id/")["host"]);
 
+$url = explode(".", parse_url("http://www.kemenparekraf.go.id/")["host"]);
 print_r($url);
-$new_str = "www.kemenparekraf";
-$c = ".go.id";
+
+
 // if (preg_match("/{$c}/i", $a, $m)) {
 //     echo var_dump($m);
 // }
-$ar = array(".com");
+$new_str = "www.kemenparekraf.go.id";
 $new_str = preg_replace(array("/\A(www.)+/","/(\.(go|sch|edu|org|com|id))*\z/"), '', $new_str);
 echo $new_str."\n";
 
