@@ -69,12 +69,13 @@ function parseUrl($url) {
 	return null;
 }*/
 function parseHost($url) {	
-	$domain = parse_url($url);
-	if (!empty($domain['host'])) {
-		$parse_host = explode('.', $domain['host']);
-		return sizeof($parse_host) == 3 ? $parse_host[1].'.'.$parse_host[2] : $domain['host'];
-	}	
-	return null;
+	return preg_replace(array("/\A(www.)+/","/(\.(go|sch|edu|org|com|id))*\z/"), '', parse_url($url)["host"]);
+	// $domain = parse_url($url);
+	// if (!empty($domain['host'])) {
+	// 	$parse_host = explode('.', $domain['host']);
+	// 	return sizeof($parse_host) == 3 ? $parse_host[1].'.'.$parse_host[2] : $domain['host'];
+	// }	
+	// return null;
 }
 function scrapeUrl($url,$host) {
 	//global $seed, $buffer, $frontier;
