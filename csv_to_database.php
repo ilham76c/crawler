@@ -7,7 +7,7 @@
 // }
 
 try {
-    $dsn = 'mysql:host=127.0.0.1;dbname=test';
+    $dsn = 'mysql:host=127.0.0.1;dbname=db_search_engine';
     $username = 'root';
     $password = '';
     $options = array(
@@ -20,13 +20,24 @@ try {
 catch(PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
-$file = fopen("crawl_data500.csv","r");
 
-$count = 0;
-while (! feof($file)) {
-    $arr = fgetcsv($file);
-    echo $arr[0]."\n";
+$sql = "INSERT INTO tbl_dokumen (url, title, description) VALUES (:url, :title, :description)";
+
+$file = fopen("crawl_data500.csv","r") or die ("Can't open file!!");
+$count = 1;
+while ($lines = fgetcsv($file)) {
+    
+    // echo $count."\t".$lines[0]."\n".$lines[1]."\n".$lines[2];
+    // $count++;
+
+    $data = [
+        'url' => $lines[0],
+        'title' => $lines[1],
+        'description' => $lines[2],
+    ];
+    $pdo->prepare($sql)->execute($data);
 }
 
 fclose($file);
+
 ?>
