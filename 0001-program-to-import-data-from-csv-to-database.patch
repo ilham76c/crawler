@@ -1,0 +1,31 @@
+From 7a8756c622625c37375bd5c803f3035a5e114f75 Mon Sep 17 00:00:00 2001
+From: batandos97 <batandos158@gmail.com>
+Date: Wed, 25 Mar 2020 15:52:00 +0700
+Subject: [PATCH] program to import data from csv to database
+
+---
+ csv_to_database.php | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+ create mode 100644 csv_to_database.php
+
+diff --git a/csv_to_database.php b/csv_to_database.php
+new file mode 100644
+index 0000000..63a07b0
+--- /dev/null
++++ b/csv_to_database.php
+@@ -0,0 +1,11 @@
++<?php
++$file = fopen("crawl_data500.csv","r");
++
++$count = 0;
++while (! feof($file)) {
++    print_r(fgetcsv($file));
++    echo "\n".$count++;
++}
++
++fclose($file);
++?>
+\ No newline at end of file
+-- 
+2.25.1
+
