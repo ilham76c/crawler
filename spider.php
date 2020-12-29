@@ -50,10 +50,19 @@ function parseUrl($url) {
 
 function parseHost($url) {	
 	$domain = parse_url($url);
+<<<<<<< HEAD
 	if (!empty($domain['host'])) {
 		return preg_replace(array('/\A(www.)+/','/(\.(go|sch|edu|org|com|id))*\z/'), '', $domain['host']);
 	}
 	return null;
+=======
+	// if (!empty($domain['host'])) {
+	// 	$parse_host = explode('.', $domain['host']);
+	// 	return sizeof($parse_host) == 3 ? $parse_host[1].'.'.$parse_host[2] : $domain['host'];
+	// }	
+	// return null;
+	return preg_replace(array("/\A(www.)+/","/(\.(go|sch|edu|org|com|id))*\z/"), '', $domain["host"]);
+>>>>>>> 2285af54b3508b91b34cd219f1163efa163f09a6
 }
 
 function scrapeUrl($url,$host) {	
