@@ -16,4 +16,11 @@ foreach ($seed as $url) {
 // $new_str = preg_replace("/\A(www.)/", '', $new_str);
 // echo $new_str."\n";
 
-?>
+//$param = "ì§ - DIY ê´ê´ ì ë³´ í¬í¸";
+$ch = 'namun tak ada jalan';
+//$ch = 'ì§ - DIY ê´ê´ ì ë³´ í¬í¸';
+    if (ctype_alpha($ch)) {
+        echo 'Accept';
+    } else {
+        echo 'Reject';
+    }

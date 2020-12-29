@@ -1,5 +1,14 @@
 <?php
-$seed = array("http://www.kemenparekraf.go.id/","https://www.twisata.com/","https://visitingjogja.com/","https://pesona.travel/");
+$seed = array(
+	'https://www.twisata.com/',
+	'https://visitingjogja.com/',
+	'https://www.water-sport-bali.com/',
+	'https://www.nativeindonesia.com/',
+	'https://mytrip123.com/',
+	'https://eksotisjogja.com/',
+	'https://anekatempatwisata.com/'
+);
+
 $telah_dikunjungi = array();
 $sedang_dikunjungi = array();
 $akan_dikunjungi = array();
@@ -15,31 +24,17 @@ function file_get_contents_curl($url) {
 
 	return $data;
 }
-function getTitle($url) {
-	$html = file_get_contents_curl($url);
-	$doc = new DOMDocument();
-	@$doc->loadHTML($html);
-	$nodes = $doc->getElementsByTagName("title");
-	if ($nodes->length > 0) {
-		return $nodes->item(0)->nodeValue;
-	}
-	return null;
-}
-function getMeta($url) {
-	$html = file_get_contents_curl($url);
-	$doc = new DOMDocument();
-	@$doc->loadHTML($html);
-	$metas = $doc->getElementsByTagName('meta');
+function getTitle($url) {	
+	$doc = new DOMDocument;
+	@$doc->loadHTMLFile($url);
 
-	$arrayMeta = array();
-	for ($i=0; $i < $metas->length; $i++) { 
-		$meta = $metas->item($i);
-		if ($meta->getAttribute('name') == 'description'){
-			return $meta->getAttribute('content');			
-		}	
-	}
+	$title = $doc->getElementsByTagName('title');
+	if (!empty($title->item(0)->nodeValue)) {
+		return $title->item(0)->nodeValue;
+	}	
 	return null;
 }
+
 function getMetaDescription($url) {
 	@$tags = get_meta_tags($url);
 	if (!empty($tags['description'])) {
@@ -47,38 +42,21 @@ function getMetaDescription($url) {
 	}
 	return null;
 }
+
 function parseUrl($url) {
 	$domain = parse_url($url);	
 	return empty($domain['path']) ? $domain['scheme'].'://'.$domain['host'].'/' : $domain['scheme'].'://'.$domain['host'].$domain['path'];	
 }
-/*function parseHost($url) {	
+
+function parseHost($url) {	
 	$domain = parse_url($url);
 	if (!empty($domain['host'])) {
-		$parse_host = explode('.', $domain['host']);
-		if (sizeof($parse_host) == 3) {
-			return $parse_host[1].'.'.$parse_host[2];
-		}
-		elseif (sizeof($parse_host) == 4) {
-			return $parse_host[1].'.'.$parse_host[2].'.'.$parse_host[3];
-		}
-		else {
-			return $domain['host'];
-		}
-		//return sizeof($parse_host) == 3 ? $parse_host[1].'.'.$parse_host[2] : $domain['host'];
-	}	
+		return preg_replace(array('/\A(www.)+/','/(\.(go|sch|edu|org|com|id))*\z/'), '', $domain['host']);
+	}
 	return null;
-}*/
-function parseHost($url) {	
-	return preg_replace(array("/\A(www.)+/","/(\.(go|sch|edu|org|com|id))*\z/"), '', parse_url($url)["host"]);
-	// $domain = parse_url($url);
-	// if (!empty($domain['host'])) {
-	// 	$parse_host = explode('.', $domain['host']);
-	// 	return sizeof($parse_host) == 3 ? $parse_host[1].'.'.$parse_host[2] : $domain['host'];
-	// }	
-	// return null;
 }
-function scrapeUrl($url,$host) {
-	//global $seed, $buffer, $frontier;
+
+function scrapeUrl($url,$host) {	
 	$list_url = array();
 	
 	$dom = new DOMDocument();
@@ -92,35 +70,36 @@ function scrapeUrl($url,$host) {
 	        if (!empty($tag->attributes->getNamedItem('href')->value)) {
 	        	$href = $tag->attributes->getNamedItem('href')->value;
 	        	# cek isi tag 'href' adalah url valid
-	        	if (filter_var($href,FILTER_VALIDATE_URL)) {
-	        		# cek host dari 'href' dengan host url utama
-	        		if (parseHost($href) == $host) {	        			
-	        			$href = parseUrl($href);
-	        			# cek apakah url dari tag 'href' sudah di ditemukan sebelumnya		
-	        			if (!in_array($href, $list_url) && !in_array($href, $GLOBALS['telah_dikunjungi']) && !in_array($href, $GLOBALS['sedang_dikunjungi']) && !in_array($href, $GLOBALS['akan_dikunjungi'])) {
-	        				$list_url[] = $href;
-	        			}
-	        		}	        						    
+	        	if (filter_var($href,FILTER_VALIDATE_URL)) {										
+					# cek host dari 'href' dengan host url utama
+					if (parseHost($href) == $host) {	        			
+						$href = parseUrl($href);						
+						# cek apakah url dari tag 'href' sudah di ditemukan sebelumnya		
+						if (!in_array($href, $list_url) && !in_array($href, $GLOBALS['telah_dikunjungi']) && !in_array($href, $GLOBALS['sedang_dikunjungi']) && !in_array($href, $GLOBALS['akan_dikunjungi'])) {
+							$list_url[] = $href;
+						}						
+					}	        						    					
 				}
 	        }	        			
 	    }		
 	}	
 	return $list_url;
 }
-function crawl($fp, $url, $host) {		
-	array_push($GLOBALS['telah_dikunjungi'], $url);
-	echo sizeof($GLOBALS['telah_dikunjungi']).' => '.$url.PHP_EOL;
-	fputcsv($fp, array($url));
-	$GLOBALS['akan_dikunjungi'] = array_merge($GLOBALS['akan_dikunjungi'], scrapeUrl($url, $host));	
-	if (!empty($GLOBALS['sedang_dikunjungi'])) {				
-		crawl($fp, array_shift($GLOBALS['sedang_dikunjungi']), $host);
-	}
-	if (!empty($GLOBALS['akan_dikunjungi'])) {
-		$GLOBALS['sedang_dikunjungi'] = $GLOBALS['akan_dikunjungi'];
-		$GLOBALS['akan_dikunjungi'] = array();
-		crawl($fp, array_shift($GLOBALS['sedang_dikunjungi']), $host);	
-	}
-}
+
+// function crawl($fp, $url, $host) {		
+// 	array_push($GLOBALS['telah_dikunjungi'], $url);
+// 	echo sizeof($GLOBALS['telah_dikunjungi']).' => '.$url.PHP_EOL;
+// 	fputcsv($fp, array($url));
+// 	$GLOBALS['akan_dikunjungi'] = array_merge($GLOBALS['akan_dikunjungi'], scrapeUrl($url, $host));	
+// 	if (!empty($GLOBALS['sedang_dikunjungi'])) {				
+// 		crawl($fp, array_shift($GLOBALS['sedang_dikunjungi']), $host);
+// 	}
+// 	if (!empty($GLOBALS['akan_dikunjungi'])) {
+// 		$GLOBALS['sedang_dikunjungi'] = $GLOBALS['akan_dikunjungi'];
+// 		$GLOBALS['akan_dikunjungi'] = array();
+// 		crawl($fp, array_shift($GLOBALS['sedang_dikunjungi']), $host);	
+// 	}
+// }
 function crawl2($fp, $url, $host) {
 	$GLOBALS['telah_dikunjungi'] = array();
 	$GLOBALS['sedang_dikunjungi'] = array();
@@ -142,7 +121,7 @@ function crawl2($fp, $url, $host) {
 				$count++;
 				echo "   ".$count." => \033[1;36m".$url."\033[0m \n";								
 			}						
-			if ($count == 500) {							
+			if ($count == 400) {							
 				break 2;
 			}
 		}		
@@ -154,22 +133,14 @@ function is_connected($url) {
 
 function main() {	
 	global $seed;
-	$fp = fopen(__DIR__."/crawl_data.csv", "w");
+	$fp = fopen(__DIR__.'/crawl_data.csv', 'w');
 	foreach ($seed as $url) {
 		if (is_connected($url)) {
 			crawl2($fp, $url, parseHost($url));		
 		}else {
 			//echo 'Tidak ada koneksi internet!!'.PHP_EOL;
 			echo "\033[91m   Tidak ada koneksi internet!! \033[0m\n";
-		}				
-		/*array_push($GLOBALS['telah_dikunjungi'], $url);
-		$GLOBALS['akan_dikunjungi'] = array_merge($GLOBALS['akan_dikunjungi'], scrapeUrl($url, parseHost($url)));		
-		while (!empty($GLOBALS['akan_dikunjungi'])) {
-			$url_to_srcape = array_shift($GLOBALS['akan_dikunjungi']);						
-			array_push($GLOBALS['telah_dikunjungi'], $url_to_srcape);
-			$GLOBALS['akan_dikunjungi'] = array_merge($GLOBALS['akan_dikunjungi'], scrapeUrl($url_to_srcape, parseHost($url_to_srcape)));						
-			echo sizeof($GLOBALS['telah_dikunjungi']).' => '.$url_to_srcape.PHP_EOL;
-		}*/
+		}						
 	}	
 	fclose($fp);
 }
