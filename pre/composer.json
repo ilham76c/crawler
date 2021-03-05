@@ -1,0 +1,17 @@
+{
+    "name": "preprocessing/ilham76c",
+    "description": "program untuk melakukan perprocessing",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ilham76c",
+            "email": "m.ilham.b.97@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "sastrawi/sastrawi": "^1",
+        "sastrawi/tokenizer": "0.*"
+    }
+}
